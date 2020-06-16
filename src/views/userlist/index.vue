@@ -54,8 +54,20 @@
                 size="mini"
                 @click="showdialog(scope.row)"
               ></el-button>
-              <el-button type="danger" icon="el-icon-delete" circle size="mini"></el-button>
-              <el-button type="warning" icon="el-icon-star-off" circle size="mini"></el-button>
+              <el-button
+                type="danger"
+                icon="el-icon-delete"
+                circle
+                size="mini"
+                @click="deleteUserShowDia(scope.row)"
+              ></el-button>
+              <el-button
+                type="warning"
+                icon="el-icon-star-off"
+                circle
+                size="mini"
+                @click="setRoleShowDia(scope.row)"
+              ></el-button>
             </el-row>
           </template>
         </el-table-column>
@@ -97,7 +109,7 @@
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="cancel" >取 消</el-button>
+          <el-button @click="cancel">取 消</el-button>
           <el-button type="primary" @click="add">确 定</el-button>
         </div>
       </el-dialog>
@@ -133,7 +145,17 @@
 </template>
 
 <script>
-import {user,modify,edit,add} from '@/http/api'
+import {
+  user,
+  modify,
+  edit,
+  add,
+  deleteUser,
+  getRoleList,
+  getUserInfo,
+  getUserRoleInfo,
+  setUserRole
+} from "@/http/api";
 import _ from "lodash";
 export default {
   name: "userlist",
@@ -142,6 +164,7 @@ export default {
       //编辑用户的显示状态
       dialogFormVisibleUserDel: false,
       flag: true,
+      form: {},
       //添加用户验证规则
       userRules: {
         username: [
@@ -154,11 +177,21 @@ export default {
         ],
         email: [
           { required: true, message: "请输入邮箱", trigger: "blur" },
-          { min: 16, max: 18, message: "长度在 16 到 18 个字符", trigger: "blur" }
+          {
+            min: 16,
+            max: 18,
+            message: "长度在 16 到 18 个字符",
+            trigger: "blur"
+          }
         ],
         mobile: [
           { required: true, message: "请输入手机号", trigger: "blur" },
-          { min: 11, max: 11, message: "长度在 11 到 11 个字符", trigger: "blur" }
+          {
+            min: 11,
+            max: 11,
+            message: "长度在 11 到 11 个字符",
+            trigger: "blur"
+          }
         ]
       },
       pageinfo: {
@@ -182,11 +215,11 @@ export default {
     this.getUserList();
   },
   methods: {
-   //修改用户信息
+    //修改用户信息
     async editUserOk() {
-      let {id,email,mobile} =this.userForm;
-      edit(id,{email,mobile})
-      this.dialogFormVisibleUserDel=false;
+      let { id, email, mobile } = this.userForm;
+      edit(id, { email, mobile });
+      this.dialogFormVisibleUserDel = false;
     },
     //  编辑
     showdialog(user) {
@@ -195,18 +228,18 @@ export default {
       //显示要编辑的内容
       this.userForm = user;
     },
-     // 通过switch改变用户的状态
+    // 通过switch改变用户的状态
     async setUserStatus(user) {
       // `users/${user.id}/state/${user.mg_state}`
-      const result=modify(user)
-      console.log('修改用户状态：',result)
+      const result = modify(user);
+      console.log("修改用户状态：", result);
     },
-    
-     //添加新用户
+
+    //添加新用户
     add() {
       this.$refs["adduser"].validate(async valid => {
         if (valid) {
-         await add(this.userForm)
+          await add(this.userForm);
           // 刷新页面展示已添加的用户
           this.getUserList();
           this.userForm = {
@@ -224,10 +257,10 @@ export default {
       });
     },
     // 取消按钮
-    cancel(){
+    cancel() {
       this.dialogFormVisibleUser = false;
     },
-     // 点击添加模态框
+    // 点击添加模态框
     addUser() {
       this.userForm = {
         username: "",
@@ -237,7 +270,7 @@ export default {
       };
       this.dialogFormVisibleUser = true;
     },
- 
+
     //搜索用户
     searchUser: _.throttle(
       function() {
@@ -251,13 +284,13 @@ export default {
       { leading: false }
     ),
     //获取用户列表
-  async  getUserList() {
-     const result=await user(this.pageinfo)
-      let {flag,result:res}=result;
-      if(result.flag === 2) {
-          this.tableData = res.users;
-          this.pageinfo.pagenum = res.pagenum;
-          this.total = res.total;
+    async getUserList() {
+      const result = await user(this.pageinfo);
+      let { flag, result: res } = result;
+      if (result.flag === 2) {
+        this.tableData = res.users;
+        this.pageinfo.pagenum = res.pagenum;
+        this.total = res.total;
       }
     },
     //分页相关的方法
@@ -273,6 +306,66 @@ export default {
       console.log(`当前页: ${val}`);
       this.pageinfo.pagenum = val;
       this.getUserList();
+    },
+
+    /**
+     * 删除用户，显示弹框
+     */
+    deleteUserShowDia(user) {
+      this.$confirm("此操作将永久删除该用户, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async () => {
+          //调用删除用户的接口
+          // console.log('当前要删除的用户信息：',user)
+          const res = await deleteUser(user.id);
+
+          this.$message({
+            type: "success",
+            message: "删除成功!"
+          });
+
+          this.getUserList();
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+    /**
+     * 设置用户角色，显示弹框
+     */
+    async setRoleShowDia(user) {
+      //赋值用户名
+      this.currentUserName = user.username;
+
+      //赋值用户id
+      this.currentUserId = user.id;
+      //获取用户角色列表
+      const res = await getRoleList();
+      //获取用户角色id
+      const res2 = await getUserInfo(user.id);
+
+      // this.currentRoleId=res2.result.rid
+
+      let roleid = res2.result.rid;
+
+      //通过角色id获取用户角色
+      const res3 = await getUserRoleInfo(roleid);
+
+      if (!res3) {
+        this.$message({
+          message: "该用户还没有分配角色",
+          type: "warning"
+        });
+      }
+
+      this.roles = res.result;
+      this.dialogFormVisiblerole = true;
     }
   }
 };

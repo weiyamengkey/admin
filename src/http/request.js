@@ -62,10 +62,10 @@ service.interceptors.response.use(function (response) {
         }
 
     } else {
-        
-        Message({
-            message:'参数有误，请检查',
-            type: "error"
+        if(status === 200){
+          Message({
+            message:msg,
+            type: "sucess"
         });
         
        return {
@@ -73,7 +73,15 @@ service.interceptors.response.use(function (response) {
            flag:1 
        }
             
+     }else
+     {
+      Message({
+        message:'参数有误，请检查',
+        type: "error"
+      });
      }
+        }
+       
    
    
   }, function (error) {

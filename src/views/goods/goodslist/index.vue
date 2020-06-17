@@ -1,12 +1,7 @@
 <template>
   <div>
     <!-- 面包屑导航 -->
-    <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-      <el-breadcrumb-item>用户列表</el-breadcrumb-item>
-    </el-breadcrumb>
-
+    <my-brand level1="商品管理" level2="商品列表"></my-brand>
     <el-card class="el_card_box">
       <!-- 1.搜索框，添加用户按钮 -->
       <el-input
@@ -18,32 +13,23 @@
       >
         <el-button slot="append" icon="el-icon-search" @click="searchUser"></el-button>
       </el-input>
-      <el-button type="primary" class="adduser" @click="addUser">添加用户</el-button>
+      <el-button type="primary" class="adduser" @click="addGoods">添加商品</el-button>
 
       <!-- 2.添加用户表格 -->
       <el-table :data="tableData" class="user_table" border style="width: 100%">
         <el-table-column type="index" label="#" width="40"></el-table-column>
-        <el-table-column prop="username" label="姓名" width="180"></el-table-column>
-        <el-table-column prop="email" label="邮箱"></el-table-column>
-        <el-table-column prop="mobile" label="电话"></el-table-column>
-        <el-table-column prop="role_name" label="角色"></el-table-column>
-        <el-table-column label="注册时间">
+        <el-table-column prop="goods_name" label="商品名称" width="180"></el-table-column>
+        <el-table-column prop="goods_price" label="商品价格"></el-table-column>
+        <el-table-column prop="goods_weight" label="商品重量"></el-table-column>
+        <el-table-column prop="goods_number" label="商品数量"></el-table-column>
+        <el-table-column label="创建时间">
           <!-- {{ create_time | date }} -->
           <template slot-scope="scope">
             <i class="el-icon-time"></i>
-            <span style="margin-left: 10px">{{ scope.row.create_time | date }}</span>
+            <span style="margin-left: 10px">{{ scope.row.add_time | date }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态">
-          <template slot-scope="scope">
-            <el-switch
-              v-model="scope.row.mg_state"
-              active-color="#13ce66"
-              inactive-color="#ff4949"
-              @change="setUserStatus(scope.row)"
-            ></el-switch>
-          </template>
-        </el-table-column>
+        
         <el-table-column label="操作">
           <template slot-scope="scope">
             <el-row>
@@ -83,7 +69,7 @@
       ></el-pagination>
 
       <!-- 添加用户对话框 -->
-      <el-dialog title="添加用户" :visible.sync="dialogFormVisibleUser">
+      <el-dialog title="添加商品" :visible.sync="dialogFormVisibleUser">
         <el-form
           :model="userForm"
           ref="adduser"
@@ -175,19 +161,10 @@
 </template>
 
 <script>
-import { getUser, 
-         modifyUserStaus, 
-         editUserInfo, 
-         deleteUser,
-         getRoleList,
-         getUserInfo,
-         getUserRoleInfo,
-         setUserRole,
-
-         } from "@/http/api";
+import { goodsList } from "@/http/api";
 import _ from "lodash";
 export default {
-  name: "userlist",
+  name: "goodslist",
   data() {
     return {
       //显示分配角色弹框
@@ -238,9 +215,17 @@ export default {
     };
   },
   created() {
-    this.getUserList();
+    this.getGoodsList();
   },
   methods: {
+      /**
+       * 添加商品
+       */
+    addGoods() {
+       // console.log('addGoods')
+       //this.$router.push('/goodsadd')
+       this.$router.push({path:'/goodsadd'})
+    },
     /**
      * 分配用户角色，调接口
      */
@@ -249,7 +234,7 @@ export default {
        console.log('分配用户角色:::::::',res)
       this.dialogFormVisiblerole=false;
 
-     this.getUserList()
+    
 
     },
     /**
@@ -304,7 +289,7 @@ export default {
             message: "删除成功!"
           });
 
-          this.getUserList();
+        //  this.getUserList();
         })
         .catch(() => {
           this.$message({
@@ -379,7 +364,7 @@ export default {
             }
           });
           //2.刷新页面展示已添加的用户
-          this.getUserList();
+         // this.getUserList();
           this.userForm = {
             username: "",
             password: "",
@@ -416,7 +401,7 @@ export default {
         // this.pageinfo.query=this.pageinfo.query.trim()
         //query.length===0代表搜索全部用户列表，否则搜索包含有关键字的用户列表
         // let _this=this;
-        this.getUserList();
+      //  this.getUserList();
       },
       3000,
       { leading: false }
@@ -427,12 +412,13 @@ export default {
      * pagesize:每页显示条数不能为空
      */
     //获取用户列表
-    async getUserList() {
-      const result = await getUser(this.pageinfo);
+    async getGoodsList() {
+      const result = await goodsList(this.pageinfo);
+      console.log('result:',result)
       let { flag, result: res } = result;
       if (result.flag === 2) {
-        this.tableData = res.users;
-        this.pageinfo.pagenum = res.pagenum;
+        this.tableData = res.goods;
+        this.pageinfo.pagenum = res.pagenum*1;
         this.total = res.total;
       }
     },
@@ -441,14 +427,14 @@ export default {
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.pageinfo.pagesize = val;
-      this.getUserList();
+      this.getGoodsList();
     },
 
     //当前页码方法
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.pageinfo.pagenum = val;
-      this.getUserList();
+      this.getGoodsList();
     }
   }
 };

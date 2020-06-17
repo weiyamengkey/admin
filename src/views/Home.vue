@@ -1,9 +1,12 @@
 <template>
-  <div class="wym_home">
-    <!-- 首页 -->
+  <div class="home">
     <el-container>
-       <!-- 头部 -->
       <el-header>
+        <!-- 
+            1.公司logo
+            2.后台系统名称
+            3.登出
+        -->
         <el-row>
           <el-col :span="3">
             <div class="grid-content bg-purple">公司名称-Logo</div>
@@ -18,15 +21,15 @@
           </el-col>
         </el-row>
       </el-header>
-
       <el-container>
         <el-aside width="200px" class="el_aside">
-          <!-- 左侧导航-->
+          <!-- 左侧导航start -->
           <el-menu
             :default-active="$route.path"
             :unique-opened="true"
             text-color="#fff"
             class="el_menu"
+            background-color="#0a0e30"
             @open="handleOpen"
             @close="handleClose"
             :router="true"
@@ -47,11 +50,11 @@
                 <i class="el-icon-s-tools"></i>
                 <span>权限管理</span>
               </template>
-              <el-menu-item index="2-1">
+              <el-menu-item index="/rolelist">
                 <i class="el-icon-s-grid"></i>
                 角色列表
               </el-menu-item>
-              <el-menu-item index="2-2">
+              <el-menu-item index="/rightlist">
                 <i class="el-icon-s-grid"></i>
                 权限列表
               </el-menu-item>
@@ -62,7 +65,7 @@
                 <i class="el-icon-location"></i>
                 <span>商品管理</span>
               </template>
-              <el-menu-item index="3-1">
+              <el-menu-item index="/goodslist">
                 <i class="el-icon-s-grid"></i>
                 商品列表
               </el-menu-item>
@@ -91,12 +94,12 @@
               <el-menu-item index="5-1">数据报表</el-menu-item>
             </el-submenu>
           </el-menu>
-        </el-aside>
 
+          <!-- 左侧导航end -->
+        </el-aside>
         <el-main>
             <router-view></router-view>
         </el-main>
-
       </el-container>
     </el-container>
   </div>
@@ -126,20 +129,21 @@ export default {
 
 
 <style lang="scss" scoped>
-.wym_home /deep/ .el-container {
+.home /deep/ .el-container {
   height: 100vh;
   padding: 0;
   margin: 0;
   width: 100vw;
 }
 .el-header {
-  background-color: #323a4e;
+  background-color: #0a0e30;
   color: #fff;
+  // text-align: center;
   line-height: 60px;
 }
 
 .el-aside {
-  background-color: #323a4e;
+  background-color: #0a0e30;
   color: #fff;
   text-align: left;
   line-height: 200px;
@@ -150,7 +154,8 @@ export default {
   color: #333;
 }
 
-.el_menu{
-   background-color: #323a4e;
-}
+// .el-submenu__title * {
+//     vertical-align: middle;
+//     color: #fff;
+// }
 </style>

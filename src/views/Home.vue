@@ -91,7 +91,7 @@
                 <i class="el-icon-location"></i>
                 <span>数据统计</span>
               </template>
-              <el-menu-item index="5-1">数据报表</el-menu-item>
+              <el-menu-item index="/report">数据报表</el-menu-item>
             </el-submenu>
           </el-menu>
 
